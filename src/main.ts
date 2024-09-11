@@ -1,229 +1,89 @@
-import axios from "axios";
-import { ObjectNotFoundError } from "./errors";
-import Notification from "./models/notification.model";
-import User from "./models/user.model";
-import { DbUtilities as DB } from "./utilities/db-utilities";
+import bodyParser from "body-parser";
+import express, { Request, Response } from "express";
+import fs from "fs";
+import https from "https";
+import swaggerUI, { SwaggerOptions } from "swagger-ui-express";
+import "./controllers/index";
+import { appRouter, swaggerDeff } from "./decorators/routable.decorator";
 require("dotenv").config();
 
-async function main() {
-    //new Date(new Date().getTime() - 5 * 60 * 1000)
-    let users = await DB.Query(
-        {
-            deleted: false,
-        },
-        User.getFactory(),
-        {},
-        { "tokens.lastPull": -1 },
-        1
-    );
+const app = express();
 
-    for (let user of users) {
-        await fetchNotifications(
-            user.id,
-            user.tokens.sort((a, b) =>
-                a.lastPull.getTime() > b.lastPull.getTime() ? 1 : -1
-            )[0].characterID
-        );
-    }
+//Setup express
+//Increase maximum 'upload' limits to 50mb, should be overkill.
+app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
+app.use(bodyParser.json({ limit: "50mb" }));
 
-    setTimeout(main, 60000);
-}
-main();
+//set cors policy to allow any source to access the api
+const cors = require("cors");
+app.use(
+    cors({
+        origin: "*",
+    })
+);
 
-//get list of
-async function fetchNotifications(userID: string, characterID: string) {
-    const user = await DB.Get(userID, User.getFactory());
-    const token = user.tokens.find((t) => t.characterID === characterID);
-    const interests = user.interests.map((i) => i.notificationType);
+app.use(appRouter);
 
-    const embeds: { [key: string]: {}[] } = {};
+//Add swagger to express
 
-    if (!token) throw new Error("INVALID CHARACTERID PROVIDED");
+const swaggerDefinition = {
+    info: {
+        title: process.env.SWAG_PAGE_TITLE,
+        version: process.env.SWAG_VERSION,
+        description: process.env.SWAG_PAGE_DESC,
+    },
+    host: process.env.SWAG_HOST,
+    basePath: process.env.SWAG_BASE_PATH,
+};
 
-    return axios
-        .get(
-            `https://esi.evetech.net/latest/characters/${characterID}/notifications/`,
+const options = {
+    swaggerDefinition,
+    swaggerOptions: {
+        url: "/swagger.json",
+    },
+    explorer: false,
+} as SwaggerOptions;
+
+appRouter.use("/docs", swaggerUI.serve);
+appRouter.use("/docs", swaggerUI.setup(swaggerDeff, options));
+
+appRouter.get("/", (req: Request, res: Response) => [res.redirect("/docs")]);
+
+app.get("/swagger.json", (req: Request, res: Response) =>
+    res.status(200).send(JSON.stringify({ ...swaggerDeff, ...options }))
+);
+
+if (process.env.SSL_ENABLED === "true") {
+    //Setup SSL
+    https
+        .createServer(
             {
-                headers: {
-                    Authorization: `Bearer ${token.accessToken}`,
-                },
-            }
+                key: fs.readFileSync(process.env.SSL_PKEY),
+                cert: fs.readFileSync(process.env.SSL_CERT),
+            },
+            app
         )
-        .then(async (res) => {
-            let data: Notification[] = await res.data
-                .filter((n: any) => interests.includes(n.type))
-                .map((n: any) =>
-                    Notification.make(
-                        n.notification_id,
-                        { id: n.sender_id, type: n.sender_type },
-                        n.type,
-                        { userID, characterID },
-                        n.timestamp,
-                        n.text,
-                        n.is_read
-                    )
-                );
-
-            for (let notif of data) {
-                //skip notifications that we aren't interested in
-                let interest = user.interests.find(
-                    (i) => i.notificationType === notif.type
-                );
-                if (!interest) continue;
-
-                //has notification already been seen?
-                try {
-                    let search = await DB.Get(
-                        notif.id,
-                        Notification.getFactory()
-                    );
-                    if (search) {
-                        continue;
-                    }
-                } catch (e) {
-                    if (!(e instanceof ObjectNotFoundError)) {
-                        throw e;
-                    }
-                }
-                DB.Insert(notif, Notification.getFactory());
-                const tokeni = user.tokens.findIndex(
-                    (t) => t.characterID === characterID
-                );
-                user.tokens[tokeni].etag = res.headers["etag"] ?? "";
-                user.tokens[tokeni].lastPull = new Date();
-                await DB.Update(user, User.getFactory());
-
-                //format notification
-                if (embeds[interest.targetWebhook] === undefined) {
-                    embeds[interest.targetWebhook] = [];
-                }
-
-                const notifLines = notif.text.split("\n");
-                const structureID = notifLines
-                    .filter((e: string) => e.startsWith("structureID"))[0]
-                    .split(" ")[2];
-                const structureTypeID = notifLines
-                    .filter((e: string) => e.startsWith("structureTypeID"))[0]
-                    .split(" ")[1];
-                const attackingAlliance = notifLines
-                    .filter((e: string) => e.startsWith("allianceName"))[0]
-                    .replaceAll("allianceName: ", "");
-                const attackingCorp = notifLines
-                    .filter((e: string) => e.startsWith("corpName"))[0]
-                    .replaceAll("corpName: ", "");
-
-                await axios
-                    .get(
-                        `https://esi.evetech.net/latest/universe/structures/${structureID}/`,
-                        {
-                            headers: {
-                                Authorization: `Bearer ${token.accessToken}`,
-                            },
-                        }
-                    )
-                    .then((structureDetails) => {
-                        const structureName = structureDetails.data.name;
-
-                        embeds[interest?.targetWebhook ?? ""].push({
-                            title: notif.type,
-                            color: "15409955",
-                            image: {
-                                url: `https://images.evetech.net/types/${structureTypeID}/render?size=128`,
-                            },
-                            // author: {
-                            //     name: "Infrastructure Team Secretary",
-                            // },
-                            fields: [
-                                {
-                                    name: "Attacker Alliance",
-                                    value: attackingAlliance,
-                                    inline: true,
-                                },
-                                {
-                                    name: "Attacker Corp",
-                                    value: attackingCorp,
-                                    inline: true,
-                                },
-                            ],
-                            description: structureName,
-                            timestamp: notif.timestamp.toISOString(),
-                        });
-                    })
-                    .catch((e) => {
-                        console.log(e);
-                        debugger;
-                    });
-            }
-
-            for (let embed of Object.entries(embeds)) {
-                for (let i = 0; embed[1].length > 0; i++) {
-                    let count = embed[1].length;
-
-                    if (embed[1].length >= 10) count = 10;
-                    axios
-                        .post(`${embed[0]}?wait=true`, {
-                            name: "Infrastructure Team Secretary",
-                            content: "@everyone",
-                            embeds: embed[1].splice(0, count),
-                        })
-                        .then((res) => {
-                            // notif.notificationSent = new Date();
-                            // DB.Upsert(notif, Notification.getFactory());
-                        })
-                        .catch((e) => {
-                            console.log(e);
-                            debugger;
-                        });
-                }
-            }
-
-            return res.data;
-        })
-        .catch((e) => {
-            if (e.response.status === 403) {
-                //attempt refresh
-                axios
-                    .post(
-                        "https://login.eveonline.com/v2/oauth/token",
-                        `grant_type=refresh_token&refresh_token=${token.refreshToken}`,
-                        {
-                            headers: {
-                                Authorization:
-                                    "Basic ZTYwZjMyN2RiOWM3NGU0OTllMjY4N2FhOGQ1MTcxOTE6d3Q4WjVHa09PUUdpaHoxeHRycGQ4YU5MblVKSkY5UHk2OU1yQ1ZmSg==",
-                                "Content-Type":
-                                    "application/x-www-form-urlencoded",
-                            },
-                        }
-                    )
-                    .then(async (tokenres) => {
-                        //store new access token
-                        const tokeni = user.tokens.findIndex(
-                            (t) => t.characterID === characterID
-                        );
-                        user.tokens[tokeni].accessToken =
-                            tokenres.data.access_token;
-
-                        await DB.Update(user, User.getFactory());
-                        fetchNotifications(userID, characterID);
-                        // queue.add("notification-refresh", {
-                        //     userID,
-                        //     characterID,
-                        // }, {
-                        //     repeat
-                        // });
-                    })
-                    .catch(async (e) => {
-                        console.log("token refresh");
-                        const tokeni = user.tokens.findIndex(
-                            (t) => t.characterID === characterID
-                        );
-
-                        user.tokens[tokeni].isActive = false;
-                        await DB.Update(user, User.getFactory());
-                    });
-            } else {
-                console.error("token refresh failed", e);
-            }
-            //if 403(?) refresh token & requeue
-        });
+        .listen(process.env.BACKEND_PORT, () =>
+            console.log(`listening on ${process.env.BACKEND_PORT}`)
+        );
+} else {
+    app.listen(process.env.BACKEND_PORT, () =>
+        console.log(`listening on ${process.env.BACKEND_PORT}`)
+    );
 }
+//Any thrown error will return a 500.
+app.use((err: any, req: any, res: any, next: any) => {
+    console.error(err.stack);
+    res.status(500).send("Something broke!");
+});
+
+//Any missing page returns a 404 and logs
+app.use((req, res, next) => {
+    console.warn(`404 ${req.method} ${req.originalUrl}`);
+    res.status(404).send("Sorry can't find that!");
+});
+
+//Catch and log any uncaught exception
+process.on("uncaughtException", (e) => {
+    console.error(e);
+});

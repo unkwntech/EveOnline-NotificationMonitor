@@ -11,6 +11,9 @@ export default class ESIToken
     public id: string;
 
     public characterID: string;
+    public characterName: string;
+    public corporationName: string;
+    public allianceName?: string;
 
     public accessToken: string;
     public refreshToken: string;
@@ -36,6 +39,18 @@ export default class ESIToken
         if (json.characterID === undefined)
             throw new Error("esiToken requires characterID");
         else this.characterID = json.characterID;
+
+        if (json.characterName === undefined)
+            throw new Error("esiToken requires characterName");
+        else this.characterName = json.characterName;
+
+        if (json.corporationName === undefined)
+            throw new Error("esiToken requires corporationName");
+        else this.corporationName = json.corporationName;
+
+        if (json.allianceName === undefined)
+            throw new Error("esiToken requires allianceName");
+        else this.allianceName = json.allianceName;
 
         if (json.accessToken === undefined)
             throw new Error("esiToken requires accessToken");
