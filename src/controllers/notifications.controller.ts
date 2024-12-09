@@ -91,7 +91,35 @@ export default class NotificationsController {
         method: "post",
         auth: true,
     })
-    public async replayNotification() {}
+    public async replayNotification(
+        req: Request,
+        res: Response,
+        jwt: JWTPayload
+    ) {
+        const notif = await DB.Get(req.params.id, Notification.getFactory());
+        const user = await DB.Get(
+            notif.notificationSource.userID,
+            User.getFactory()
+        );
+        const interest = user.interests.find(
+            (i) => i.notificationType === notif.type
+        );
+
+        if (!interest) {
+            res.sendStatus(500);
+            throw new Error(
+                `unable to find interest for notification id ${notif.id}`
+            );
+        }
+
+        NotificationsController.sendNotification(
+            notif,
+            interest,
+            notif.notificationSource
+        );
+
+        res.sendStatus(200);
+    }
 
     public static async sendNotification(
         notif: Notification,
