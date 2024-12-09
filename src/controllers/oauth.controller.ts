@@ -56,6 +56,8 @@ export default class OAuthController {
         const code = req.query.code;
         if (!code) res.status(400).send("code is a required attribute");
 
+        //TODO if jwt is valid, and posted char is not in DB update else get main
+
         let tokens = await axios
             .post(
                 "https://login.eveonline.com/v2/oauth/token",

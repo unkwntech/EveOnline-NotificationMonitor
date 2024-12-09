@@ -23,10 +23,12 @@ export default class NotificationsController {
         jwt: JWTPayload
     ) {
         DB.Query(
-            { "notificationSoure.userID": jwt.sub },
+            { "notificationSource.userID": jwt.sub },
             Notification.getFactory()
         )
-            .then((results) => {})
+            .then((results) => {
+                res.status(200).send(results);
+            })
             .catch((e) => {
                 res.sendStatus(500);
                 console.error(e);
