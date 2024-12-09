@@ -1,5 +1,5 @@
-import routable from "@decorators/routable.decorator";
 import { Request, Response } from "express";
+import routable from "../decorators/routable.decorator";
 import { JWTPayload } from "../models/jwtpayload.model";
 import User from "../models/user.model";
 import { DbUtilities as DB } from "../utilities/db-utilities";
@@ -14,10 +14,8 @@ export default class Users {
         res: Response,
         jwt: JWTPayload
     ): Promise<void> {
-        console.log(req.query);
         res.append("Access-Control-Expose-Headers", "*");
         let data = await DB.Query({}, User.getFactory());
-        console.log(data);
         res.append("Content-Range", `*/${data.length}`);
         res.send(data);
     }
@@ -31,10 +29,8 @@ export default class Users {
         res: Response,
         jwt: JWTPayload
     ): Promise<void> {
-        console.log(req.query);
         res.append("Access-Control-Expose-Headers", "*");
         let data = await DB.Get(req.params.id, User.getFactory());
-        console.log(data);
         res.send(data);
     }
 }

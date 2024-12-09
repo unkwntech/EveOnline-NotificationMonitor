@@ -1,3 +1,4 @@
+import * as yaml from "yaml";
 import AuditFields from "./auditFields.model";
 import Deletable from "./deletable.model";
 import { Factory } from "./factory";
@@ -87,22 +88,99 @@ export default class Notification
 
     public static getFactory(): Factory<Notification> {
         return new (class implements Factory<Notification> {
-            make(json: any): Notification {
-                return new Notification(json);
-            }
-            getCollectionName(): string {
-                return Notification.getCollectionName();
-            }
-            getURL(id?: string): string {
-                return Notification.getURL(id);
-            }
+            make = (json: any): Notification => new Notification(json);
+            collectionName = "Notifications";
+            getURL = (id?: string): string => Notification.getURL(id);
         })();
     }
-    public static getCollectionName(): string {
-        return "Notifications";
-    }
+
     public static getURL(id?: string) {
         return "/notification/" + (id ? `/${id}` : "");
+    }
+
+    public toEmbed(data?: any) {
+        switch (this.type) {
+            case "StructureUnderAttack":
+                const text = yaml.parse(this.text);
+
+                const shieldPer = text.shieldPercentage;
+                const armourPer = text.armorPercentage;
+                const hullPer = text.hullPercentage;
+                const attackCorp = text.corpName;
+                let attackAlli = "";
+                if (text.allianceName) attackAlli = text.allianceName;
+
+                return {
+                    content: "@everyone",
+                    tts: false,
+                    embeds: [
+                        {
+                            title: "Structure Attacked",
+                            color: 13223722,
+                            fields: [
+                                {
+                                    name: "Shield Attacked",
+                                    value: data.structureName ?? "UNKNOWN",
+                                    inline: true,
+                                },
+                                {
+                                    name: "Owner",
+                                    value: `[${
+                                        data.ownerName ?? "UNKWNOWN"
+                                    }](https://zkillboard.com/corporation/${
+                                        data.ownerID ?? ""
+                                    }/)`,
+                                    inline: true,
+                                },
+                                {
+                                    name: " ",
+                                    value: " ",
+                                    inline: true,
+                                },
+                                {
+                                    name: "Attacker Alliance",
+                                    value: `[${attackAlli}](https://zkillboard.com/alliance/${text.allianceLinkData[2]}/)`,
+                                    inline: true,
+                                },
+                                {
+                                    name: "Attacker Corp",
+                                    value: `[${attackCorp}](https://zkillboard.com/corporation/${text.corpLinkData[2]}/)`,
+                                    inline: true,
+                                },
+                                {
+                                    name: "Attacker",
+                                    value: `[${
+                                        data.attackerName ?? "UNKWNOWN"
+                                    }](https://zkillboard.com/character/${
+                                        text.charID
+                                    }/)`,
+                                    inline: true,
+                                },
+                                {
+                                    name: "Shield Status",
+                                    value: `${Math.floor(shieldPer)}%`,
+                                    inline: true,
+                                },
+                                {
+                                    name: "Armour Status",
+                                    value: `${Math.floor(armourPer)}%`,
+                                    inline: true,
+                                },
+                                {
+                                    name: "Hull Status",
+                                    value: `${Math.floor(hullPer)}%`,
+                                    inline: true,
+                                },
+                            ],
+                            timestamp: this.timestamp,
+                            thumbnail: {
+                                url: `https://images.evetech.net/types/${text.structureShowInfoData[1]}/render?size=128`,
+                            },
+                        },
+                    ],
+                };
+                break;
+        }
     }
 }
 

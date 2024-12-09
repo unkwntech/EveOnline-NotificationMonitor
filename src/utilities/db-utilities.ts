@@ -15,7 +15,7 @@ export class DbUtilities {
         try {
             await dbClient.connect();
             const database = dbClient.db(process.env.MONGO_DBNAME);
-            const collection = database.collection(factory.getCollectionName());
+            const collection = database.collection(factory.collectionName);
             const result = await collection.insertOne(o);
             if (!result) {
                 throw new Error("Error inserting.");
@@ -35,7 +35,7 @@ export class DbUtilities {
         try {
             await dbClient.connect();
             const database = dbClient.db(process.env.MONGO_DBNAME);
-            const collection = database.collection(factory.getCollectionName());
+            const collection = database.collection(factory.collectionName);
             const data = await collection.findOne<T>({ id: id });
             if (!data) {
                 throw new ObjectNotFoundError(
@@ -58,7 +58,7 @@ export class DbUtilities {
             const query = { id: o.id };
             await dbClient.connect();
             const database = dbClient.db(process.env.MONGO_DBNAME);
-            const collection = database.collection(factory.getCollectionName());
+            const collection = database.collection(factory.collectionName);
             const result = await collection.replaceOne(query, o);
             if (!result) {
                 throw new Error("Error updating.");
@@ -76,7 +76,7 @@ export class DbUtilities {
             const query = { id: o.id };
             await dbClient.connect();
             const database = dbClient.db(process.env.MONGO_DBNAME);
-            const collection = database.collection(factory.getCollectionName());
+            const collection = database.collection(factory.collectionName);
             const result = await collection.replaceOne(query, o, {
                 upsert: true,
             });
@@ -93,14 +93,14 @@ export class DbUtilities {
     // NOTE: We rarely need to hard-delete objects. You should probably consider soft-deleting.
     static async HardDelete<T extends Identifiable>(o: T, factory: Factory<T>) {
         console.warn(
-            `HARD DELETE OF OBJECT ${o.id} FROM ${factory.getCollectionName()}`
+            `HARD DELETE OF OBJECT ${o.id} FROM ${factory.collectionName}`
         );
 
         const dbClient = new MongoClient(DbUtilities.CONNECTION_STRING);
         try {
             await dbClient.connect();
             const database = dbClient.db(process.env.MONGO_DBNAME);
-            const collection = database.collection(factory.getCollectionName());
+            const collection = database.collection(factory.collectionName);
             const query = { id: o.id };
             const data = await collection.deleteOne(query);
             if (!data) {
@@ -124,7 +124,7 @@ export class DbUtilities {
         try {
             await dbClient.connect();
             const database = dbClient.db(process.env.MONGO_DBNAME);
-            const collection = database.collection(factory.getCollectionName());
+            const collection = database.collection(factory.collectionName);
             const cursor = collection.find(query, { projection, sort, limit });
             const list: T[] = [];
             await cursor.forEach((doc) => {
@@ -149,7 +149,7 @@ export class DbUtilities {
     //     try {
     //         await dbClient.connect();
     //         const database = dbClient.db(process.env.MONGO_DBNAME);
-    //         const collection = database.collection(factory.getCollectionName());
+    //         const collection = database.collection(factory.collectionName);
     //         const cursor = collection.find(query, { projection, sort });
     //         let list: T[] = [];
     //         await cursor.forEach((d) => {

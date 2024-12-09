@@ -6,7 +6,7 @@ namespace NodeJS {
         MONGO_OPTS: string;
         MONGO_DBNAME: string;
         ESI_SECRET: string;
-        ESI_APPID: string;
+        ESI_CLIENTID: string;
         SWAG_PAGE_TITLE: string;
         SWAG_PAGE_DESC: string;
         SWAG_VERSION: string;
@@ -18,5 +18,6 @@ namespace NodeJS {
         SSL_CERT: string;
         BACKEND_PORT: string;
         LOG_LEVEL: string;
+        JWT_SECRET: string;
     }
 }
