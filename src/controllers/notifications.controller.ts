@@ -43,6 +43,15 @@ export default class NotificationsController {
         res: Response,
         jwt: JWTPayload
     ) {
+        const existing = await DB.Get(
+            req.body.notification_id,
+            Notification.getFactory()
+        );
+        if (existing) {
+            res.status(400).send("document already exists");
+            return;
+        }
+
         const source = {
             userID: req.body.userID,
             characterID: req.body.characterID,
