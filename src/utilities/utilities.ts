@@ -23,4 +23,10 @@ export class Utilities {
     static generateRandomNumber(min: number, max: number): number {
         return Math.floor(Math.random() * (max - min + 1) + min);
     }
+
+    static generateAuthHeader(clientID: string, secret: string): string {
+        return `Basic ${Buffer.from(`${clientID}:${secret}`, "binary").toString(
+            "base64"
+        )}`;
+    }
 }

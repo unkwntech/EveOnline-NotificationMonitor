@@ -9,7 +9,7 @@
             "runtimeArgs": [
                 "-r",
                 "tsconfig-paths/register",
-                "${workspaceFolder}\\build\\src\\main.js"
+                "${workspaceFolder}\\build\\main.js"
             ],
             "env": {
                 "TS_NODE_BASEURL": "./build"

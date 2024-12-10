@@ -1,0 +1,101 @@
+{
+    "id": "0",
+    "tokens": [
+        {
+            "id": "0",
+            "characterID": "2118821411",
+            "characterName": "Bringsallthe BoystotheYard",
+            "corporationName": "Minmatar Fleet Holdings",
+            "allianceName?": "Minmatar Fleet Alliance",
+            "accessToken": "",
+            "refreshToken": "ZvXtR0qNQkuWM0Y0oFtoEA==",
+            "isMain": false,
+            "lastPull": -1,
+            "lastRefresh": -1,
+            "etag": "",
+            "isActive": true,
+            "deleted": false,
+            "createdOn": -1,
+            "createdBy": -1
+        },
+        {
+            "id": "3",
+            "characterID": "2122609431",
+            "characterName": "Infra Monitor 00",
+            "corporationName": "Minmatar Fleet Holdings",
+            "allianceName?": "Minmatar Fleet Alliance",
+            "accessToken": "",
+            "refreshToken": "34Iqiishy0+0Re0Ycayj9Q==",
+            "isMain": false,
+            "lastPull": -1,
+            "lastRefresh": -1,
+            "etag": "",
+            "isActive": true,
+            "deleted": false,
+            "createdOn": -1,
+            "createdBy": -1
+        },
+        {
+            "id": "0",
+            "characterID": "2122609441",
+            "characterName": "Infra Monitor 01",
+            "corporationName": "Minmatar Fleet Holdings",
+            "allianceName?": "Minmatar Fleet Alliance",
+            "accessToken": "",
+            "refreshToken": "hEzP+6oYjk6xvgyu0Nlb8A==",
+            "isMain": false,
+            "lastPull": -1,
+            "lastRefresh": -1,
+            "etag": "",
+            "isActive": true,
+            "deleted": false,
+            "createdOn": -1,
+            "createdBy": -1
+        },
+        {
+            "id": "1",
+            "characterID": "2122609445",
+            "characterName": "Infra Monitor 02",
+            "corporationName": "Minmatar Fleet Holdings",
+            "allianceName?": "Minmatar Fleet Alliance",
+            "accessToken": "",
+            "refreshToken": "bM3+uyjpNk2sXQB0XhIoow==",
+            "isMain": false,
+            "lastPull": -1,
+            "lastRefresh": -1,
+            "etag": "",
+            "isActive": true,
+            "deleted": false,
+            "createdOn": -1,
+            "createdBy": -1
+        },
+        {
+            "id": "2",
+            "characterID": "2122609446",
+            "characterName": "Infra Monitor 03",
+            "corporationName": "Minmatar Fleet Holdings",
+            "allianceName?": "Minmatar Fleet Alliance",
+            "accessToken": "",
+            "refreshToken": "hRXMWglnkESt2rC08ZI9cg==",
+            "isMain": false,
+            "lastPull": -1,
+            "lastRefresh": -1,
+            "etag": "",
+            "isActive": true,
+            "deleted": false,
+            "createdOn": -1,
+            "createdBy": -1
+        }
+    ],
+    "interests": [
+        {
+            "notificationType": "StructureUnderAttack"
+        }
+    ],
+    "updates": [],
+    "mainCharacterID": "1978535095",
+    "mainCharacterName": "Ibn Khatab",
+    "mainCharacterCorporationName": "Black Omega Security",
+    "mainCharacterAllianceName": "Minmatar Fleet Alliance",
+    "deleted": false
+}

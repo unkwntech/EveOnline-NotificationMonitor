@@ -141,6 +141,16 @@ function routable(options: IOptions) {
                 }
 
                 jwt = new JWTPayload(JWT.decode(encodedJwt));
+            } else if (
+                headers.authorization &&
+                headers.authorization
+                    .split(" ")[0]
+                    .trim()
+                    .toLocaleLowerCase() === "bearer"
+            ) {
+                jwt = new JWTPayload(
+                    JWT.decode(headers.authorization.split(" ")[1])
+                );
             }
 
             origFunc(request, response, jwt);
