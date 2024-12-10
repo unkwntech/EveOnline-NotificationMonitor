@@ -56,9 +56,7 @@ export default class OAuthController {
         const code = req.query.code;
         if (!code) res.status(400).send("code is a required attribute");
 
-        //TODO if jwt is valid, and posted char is not in DB update else get main
-
-        let tokens = await axios
+        const tokens = await axios
             .post(
                 "https://login.eveonline.com/v2/oauth/token",
                 `grant_type=authorization_code&code=${code}`,
@@ -82,10 +80,8 @@ export default class OAuthController {
                 console.error("ERROR", e.response);
             });
 
-        let accessToken = Jwt.decode(tokens.access_token) as JwtPayload;
-        let refreshToken = tokens.refresh_token;
-
-        console.log(accessToken);
+        const accessToken = Jwt.decode(tokens.access_token) as JwtPayload;
+        const refreshToken = tokens.refresh_token;
 
         if (!accessToken || !accessToken.sub) {
             console.error("UNABLE TO PARSE ACCESSTOKEN JWT");
@@ -110,8 +106,6 @@ export default class OAuthController {
                 //         "faction_id": 500002
                 //     }
                 // ]
-
-                console.log(affiliations);
             })
             .catch((e: any) => {
                 res.status(500).send(e);
@@ -181,10 +175,43 @@ export default class OAuthController {
             Users.getFactory()
         ).then(async (res) => {
             if (res.length < 1) {
+                if (jwt && jwt.sub) {
+                    let u = await DB.Get(jwt.sub, Users.getFactory());
+                    if (u) {
+                        u.characters.push({
+                            id: characterID.toString(),
+                            name: accessToken.name,
+                            isMain: false,
+                            token: {
+                                accessToken: tokens.access_token,
+                                refreshToken,
+                                lastUsed: new Date(),
+                                isActive: true,
+                            },
+                            corporation: {
+                                id: affiliations.corporation_id,
+                                name: corp.name,
+                                alliance,
+                            },
+                        });
+
+                        u.updates.push({
+                            timestamp: new Date(),
+                            actor: accessToken.sub ?? "",
+                            sourceIP: ((req.headers[
+                                "x-forwarded-for"
+                            ] as string) || req.socket.remoteAddress) as string,
+                            action: `ADD CHAR ${characterID}`,
+                        });
+
+                        await DB.Update(u, User.getFactory());
+                    }
+                    return u;
+                }
                 let newUser = Users.make(
                     {
                         id: characterID.toString(),
-                        name: tokens.name,
+                        name: accessToken.name,
                         isMain: true,
                         token: {
                             accessToken: tokens.access_token,
@@ -228,11 +255,18 @@ export default class OAuthController {
 
         const newJWT = Jwt.sign(payload, process.env.JWT_SECRET);
 
+        const mainChar = user.characters.find((u) => u.isMain);
+
+        if (!mainChar) {
+            res.sendStatus(500);
+            return;
+        }
+
         res.status(200).send({
             jwt: newJWT,
             user: {
-                fullName: tokens.name,
-                avatar: `https://images.evetech.net/characters/${affiliations.character_id}/portrait?size=128`,
+                fullName: mainChar.name,
+                avatar: `https://images.evetech.net/characters/${mainChar.id}/portrait?size=128`,
                 ...user,
             },
         });
