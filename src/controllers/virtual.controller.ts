@@ -26,21 +26,19 @@ export default class Virtual {
     @routable({
         path: "/characters/",
         method: "get",
-        auth: false,
+        auth: true,
     })
     public async getCharacters(req: Request, res: Response, jwt: JWTPayload) {
-        DB.Query({}, User.getFactory())
-            .then((qResult) => {
+        DB.Get(jwt.sub, User.getFactory())
+            .then((result) => {
                 res.status(200).send(
-                    qResult.flatMap((u) =>
-                        u.characters.map((c) => {
-                            return {
-                                id: c.id,
-                                name: c.name,
-                                isMain: c.isMain,
-                            };
-                        })
-                    )
+                    result.characters.map((c) => {
+                        return {
+                            id: c.id,
+                            name: c.name,
+                            isMain: c.isMain,
+                        };
+                    })
                 );
             })
             .catch((e) => {
