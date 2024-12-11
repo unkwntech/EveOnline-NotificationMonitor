@@ -31,15 +31,7 @@ export default class Virtual {
     public async getCharacters(req: Request, res: Response, jwt: JWTPayload) {
         DB.Get(jwt.sub, User.getFactory())
             .then((result) => {
-                res.status(200).send(
-                    result.characters.map((c) => {
-                        return {
-                            id: c.id,
-                            name: c.name,
-                            isMain: c.isMain,
-                        };
-                    })
-                );
+                res.status(200).send(result.characters);
             })
             .catch((e) => {
                 console.error(e);
