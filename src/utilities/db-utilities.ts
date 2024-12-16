@@ -138,28 +138,4 @@ export class DbUtilities {
             await dbClient.close();
         }
     }
-
-    // static async ProjectedQuery<T>(
-    //     query: any,
-    //     factory: Factory<T>,
-    //     projection: any,
-    //     sort?: any
-    // ): Promise<Partial<T>> {
-    //     const dbClient = new MongoClient(DbUtilities.CONNECTION_STRING);
-    //     try {
-    //         await dbClient.connect();
-    //         const database = dbClient.db(process.env.MONGO_DBNAME);
-    //         const collection = database.collection(factory.collectionName);
-    //         const cursor = collection.find(query, { projection, sort });
-    //         let list: T[] = [];
-    //         await cursor.forEach((d) => {
-    //             list.push(new factory(d));
-    //         });
-    //         return list;
-    //     } catch (ex) {
-    //         throw ex;
-    //     } finally {
-    //         await dbClient.close();
-    //     }
-    // }
 }
