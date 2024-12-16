@@ -36,8 +36,12 @@ DB.Query({}, User.getFactory()).then(async (users: User[]) => {
         //sufficient time has elapsed, use oldest char
 
         //refresh access token
-        corpChars[0].token = await refreshAccessToken(corpChars[0].token);
+        corpChars[0].token =
+            (await refreshAccessToken(corpChars[0].token)) ??
+            corpChars[0].token;
         //todo: push token to db
+
+        console.log(corpChars[0].name);
 
         //fetch notifications
         axios
@@ -53,12 +57,21 @@ DB.Query({}, User.getFactory()).then(async (users: User[]) => {
                 //push notifications to api
 
                 for (let notif of results.data as esi_notification[]) {
-                    axios.post("", notif, {
-                        headers: {
-                            Authorization: `Bearer `,
-                        },
-                    });
+                    console.log(notif.type);
+                    axios.post(
+                        `https://ibns.tech:8005/api/notifications/`,
+                        notif,
+                        {
+                            headers: {
+                                Authorization: `Bearer ${corpChars[0].token.accessToken}`,
+                            },
+                        }
+                    );
                 }
+            })
+            .catch((e) => {
+                // console.error(e.response);
+                // process.exit();
             });
     }
 });
@@ -72,7 +85,7 @@ interface esi_notification {
     type: string;
 }
 
-const refreshAccessToken = (token: ESIToken): Promise<ESIToken> =>
+const refreshAccessToken = (token: ESIToken): Promise<ESIToken | void> =>
     axios
         .post(
             "https://login.eveonline.com/v2/oauth/token",
@@ -80,7 +93,7 @@ const refreshAccessToken = (token: ESIToken): Promise<ESIToken> =>
             {
                 headers: {
                     authorization: `Basic ${Buffer.from(
-                        `${process.env.ESI_CLIENTID}:${process.env.ESI_SECRETKEY}`
+                        `${process.env.ESI_CLIENTID}:${process.env.ESI_SECRET}`
                     ).toString("base64")}`,
                     "Content-Type": "application/x-www-form-urlencoded",
                 },
@@ -95,4 +108,8 @@ const refreshAccessToken = (token: ESIToken): Promise<ESIToken> =>
                 etag: result.headers.etag ?? undefined,
                 isActive: true,
             } as ESIToken;
+        })
+        .catch((e) => {
+            // console.error(e.response);
+            // process.exit();
         });
