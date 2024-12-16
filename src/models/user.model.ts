@@ -38,7 +38,7 @@ export default class User implements Identifiable, Deletable, Auditable {
     ): User {
         return new User({
             id: Utilities.newGuid(),
-            characters: [{ ...mainCharacter, ismain: true }],
+            characters: [{ ...mainCharacter, isMain: true }],
             deleted: false,
             updates: [
                 {
