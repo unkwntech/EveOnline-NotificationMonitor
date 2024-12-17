@@ -74,5 +74,5 @@
         "forceConsistentCasingInFileNames": true /* Disallow inconsistently-cased references to the same file. */
     },
     "exclude": ["/tests/*"],
-    "include": ["./src/cron.ts"]
+    "include": ["./src/cron.ts", "./src/**/*"]
 }
