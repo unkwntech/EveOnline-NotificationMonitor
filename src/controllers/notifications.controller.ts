@@ -38,7 +38,7 @@ export default class NotificationsController {
     @routable({
         path: "/notifications/",
         method: "post",
-        auth: false,
+        auth: true,
     })
     public async createNotification(
         req: Request,
