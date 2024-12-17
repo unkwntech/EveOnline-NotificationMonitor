@@ -238,6 +238,18 @@ export default class OAuthController {
                     req.socket.remoteAddress) as string,
                 action: "LOGIN",
             });
+
+            let ci = res[0].characters.findIndex(
+                (c) => c.id === characterID.toString()
+            );
+
+            res[0].characters[ci].token = {
+                accessToken: tokens.access_token,
+                refreshToken: tokens.refresh_token,
+                lastUsed: new Date(0),
+                isActive: true,
+            };
+
             DB.Update(res[0], User.getFactory());
             return new User(res[0]);
         });
