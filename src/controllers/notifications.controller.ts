@@ -2,6 +2,7 @@ import axios from "axios";
 import { Request, Response } from "express";
 import * as yaml from "yaml";
 import routable from "../decorators/routable.decorator";
+import { ObjectNotFoundError } from "../errors";
 import Interest from "../models/interests.model";
 import { JWTPayload } from "../models/jwtpayload.model";
 import Notification, {
@@ -45,13 +46,18 @@ export default class NotificationsController {
         res: Response,
         jwt: JWTPayload
     ) {
-        const existing = await DB.Get(
-            req.body.notification_id,
-            Notification.getFactory()
-        );
-        if (existing) {
-            res.status(400).send("document already exists");
-            return;
+        try {
+            const existing = await DB.Get(
+                req.body.notification_id,
+                Notification.getFactory()
+            );
+            if (existing) {
+                res.status(400).send("document already exists");
+                return;
+            }
+        } catch (e) {
+            //supress ObjectNotFoundError
+            if (!(e instanceof ObjectNotFoundError)) throw e;
         }
 
         const source = {
