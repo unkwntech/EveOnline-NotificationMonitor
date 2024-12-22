@@ -1,80 +1,130 @@
 import axios from "axios";
-import User, { Character, ESIToken } from "./models/user.model";
+import User, { Character, Corporation, ESIToken } from "./models/user.model";
 import { DbUtilities as DB } from "./utilities/db-utilities";
 
-//scheduling
-/*
+let users: User[] = [];
+let characters: Character[] = [];
+let corporations: Corporation[] = [];
 
-    period = 5 * 60 / tokenCount
+const interestingNotifs = [
+    "OrbitalAttacked",
+    "StructureUnderAttack",
+    "StructureLostShields",
+    "StructureLostArmor",
+    "OrbitalReinforced",
+    "StructureNoReagentsAlert",
+    "StructureFuelAlert",
+    "TowerResourceAlertMsg",
+    "StructureWentLowPower",
+    "StructureDestroyed",
+    "StructureServicesOffline",
+    "StructureImpendingAbandonmentAssetsAtRisk",
+    "CorpNewCEOMsg",
+];
 
-    shouldRun = now - timeSinceLastRun > period
+async function main() {
+    //fetch and setup data
+    await DB.Query({}, User.getFactory()).then((usersr: User[]) => {
+        users = usersr;
+        characters.push(...users.flatMap((u) => u.characters));
 
-*/
+        corporations = characters
+            .map((c) => c.corporation)
+            .filter((v, i, a) => a.findIndex((b) => b.id === v.id) === i);
+    });
 
-DB.Query({}, User.getFactory()).then(async (users: User[]) => {
-    const characters: Character[] = [];
-    characters.push(...users.flatMap((u) => u.characters));
-
-    for (let corp of characters.map((c) => c.corporation)) {
-        const corpChars = characters.filter((c) => c.corporation === corp);
+    for (let corp of corporations) {
+        //filter to characters in corp and are active
+        const corpChars = characters.filter(
+            (c) => c.corporation.name === corp.name && c.token.isActive
+        );
         //sort oldest to newest
         corpChars.sort((a, b) =>
             a.token.lastUsed < b.token.lastUsed ? -1 : 1
         );
 
-        const period = (5 * 60) / corpChars.length;
+        //todo alert if 0 chars in corp
+        if (corpChars.length < 1 || !corpShouldUpdate(corpChars)) continue;
 
-        if (
-            Date.now() -
-                corpChars[corpChars.length - 1].token.lastUsed.getTime() <
-            period
-        ) {
-            //not enough time has elapsed
-            continue;
+        const workingChar = corpChars[0];
+
+        workingChar.token = await refreshAccessToken(workingChar.token);
+
+        let notifs = (await fetchNotifications(workingChar).catch((e) => {
+            if (!e.response) {
+                console.error(`no response: ${e}`);
+            } else {
+                console.error(e.response);
+            }
+        })) || { status: 0, data: [], headers: { etag: "" } };
+
+        if (notifs.status !== 200) continue;
+
+        let user = users.find((u) =>
+            u.characters.find((c) => c.id === workingChar.id)
+        );
+        if (user) {
+            let ci = user.characters.findIndex((c) => c.id === workingChar.id);
+            user.characters[ci].token.lastUsed = new Date();
+            user.characters[ci].token.etag = notifs.headers.etag;
+            await DB.Update(user, User.getFactory());
         }
 
-        //sufficient time has elapsed, use oldest char
+        //send notif to api
 
-        //refresh access token
-        corpChars[0].token =
-            (await refreshAccessToken(corpChars[0].token)) ??
-            corpChars[0].token;
-        //todo: push token to db
-
-        console.log(corpChars[0].name);
-
-        //fetch notifications
-        axios
-            .get(
-                `https://esi.evetech.net/latest/characters/${corpChars[0].id}/notifications/`,
-                {
-                    headers: {
-                        Authorization: `Bearer: ${corpChars[0].token.accessToken}`,
-                    },
-                }
-            )
-            .then((results) => {
-                //push notifications to api
-
-                for (let notif of results.data as esi_notification[]) {
-                    console.log(notif.type);
-                    axios.post(
-                        `https://ibns.tech:8005/api/notifications/`,
-                        notif,
-                        {
-                            headers: {
-                                Authorization: `Bearer ${corpChars[0].token.accessToken}`,
-                            },
-                        }
-                    );
-                }
-            })
-            .catch((e) => {
-                // console.error(e.response);
-                // process.exit();
-            });
+        for (let notif of notifs.data as esi_notification[]) {
+            if (notif.type in interestingNotifs) {
+                submitNotifiaction(notif).catch((e) => {
+                    if (!e.response) {
+                        console.error(`no response: ${e}`);
+                    } else {
+                        console.error(e.response);
+                    }
+                });
+            }
+        }
     }
-});
+}
+main();
+
+const submitNotifiaction = (notification: esi_notification): Promise<any> =>
+    axios.post(
+        `https://notifs.ibns.tech:8005/api/notifications/`,
+        notification,
+        {
+            headers: {
+                Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiItMSIsIm5hbWUiOiJDUk9OVEFCIiwiaWF0IjoxNTE2MjM5MDIyfQ.yxUBEzSGyRcjovlHCXPQ7DLJrWAhg28BLGrFQ8gqNew`,
+            },
+        }
+    );
+
+const corpShouldUpdate = (chars: Character[]): boolean => {
+    /*
+        period = 5 * 60 / tokenCount
+        shouldRun = now - timeSinceLastRun > period
+    */
+    const period = Math.floor(
+        parseInt(process.env.ESI_NOTIFICATION_CACHE_TIMER) / chars.length
+    );
+    return (
+        Date.now() - chars[chars.length - 1].token.lastUsed.getTime() > period
+    );
+};
+
+const fetchNotifications = async (char: Character) => {
+    let config: { [key: string]: any } = {
+        headers: {
+            Authorization: `Bearer ${char.token.accessToken}`,
+        },
+    };
+    if (char.token.etag) {
+        config.headers.etag = char.token.etag;
+    }
+    return axios.get(
+        `https://esi.evetech.net/latest/characters/${char.id}/notifications/`,
+        config
+    );
+};
 
 interface esi_notification {
     notification_id: number;
@@ -85,7 +135,7 @@ interface esi_notification {
     type: string;
 }
 
-const refreshAccessToken = (token: ESIToken): Promise<ESIToken | void> =>
+const refreshAccessToken = (token: ESIToken): Promise<ESIToken> =>
     axios
         .post(
             "https://login.eveonline.com/v2/oauth/token",
@@ -102,14 +152,8 @@ const refreshAccessToken = (token: ESIToken): Promise<ESIToken | void> =>
         .then((result) => {
             const data = result.data;
             return {
+                ...token,
                 accessToken: data.access_token,
                 refreshToken: data.refresh_token,
-                lastUsed: new Date(),
-                etag: result.headers.etag ?? undefined,
-                isActive: true,
             } as ESIToken;
-        })
-        .catch((e) => {
-            // console.error(e.response);
-            // process.exit();
         });
