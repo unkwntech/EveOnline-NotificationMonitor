@@ -7,6 +7,7 @@ namespace NodeJS {
         MONGO_DBNAME: string;
         ESI_SECRET: string;
         ESI_CLIENTID: string;
+        ESI_NOTIFICATION_CACHE_TIMER: string;
         SWAG_PAGE_TITLE: string;
         SWAG_PAGE_DESC: string;
         SWAG_VERSION: string;
