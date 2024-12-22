@@ -81,7 +81,7 @@ export default class NotificationsController {
 
         res.status(201).send(newNotif);
 
-        DB.Get(req.body.userID, User.getFactory()).then((user: User) => {
+        await DB.Get(req.body.userID, User.getFactory()).then((user: User) => {
             const interest = user.interests.find(
                 (i) => i.notificationType === newNotif.type
             );
