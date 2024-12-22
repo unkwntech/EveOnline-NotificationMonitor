@@ -43,6 +43,8 @@ async function main() {
             a.token.lastUsed < b.token.lastUsed ? -1 : 1
         );
 
+        console.log(`${corp.name} ${corpShouldUpdate(corpChars)}`);
+
         //todo alert if 0 chars in corp
         if (corpChars.length < 1 || !corpShouldUpdate(corpChars)) continue;
 
@@ -73,24 +75,34 @@ async function main() {
         //send notif to api
 
         for (let notif of notifs.data as esi_notification[]) {
-            if (notif.type in interestingNotifs) {
-                submitNotifiaction(notif).catch((e) => {
-                    if (!e.response) {
-                        console.error(`no response: ${e}`);
-                    } else {
-                        console.error(e.response);
+            if (interestingNotifs.includes(notif.type)) {
+                submitNotification(notif, user?.id, workingChar.id).catch(
+                    (e) => {
+                        if (!e.response) {
+                            console.error(`no response: ${e}`);
+                        } else {
+                            if (e.response.data === "document already exists")
+                                return;
+                            console.error(e.response);
+                        }
                     }
-                });
+                );
             }
         }
+
+        return;
     }
 }
 main();
 
-const submitNotifiaction = (notification: esi_notification): Promise<any> =>
+const submitNotification = (
+    notification: esi_notification,
+    userID?: string,
+    characterID?: string
+): Promise<any> =>
     axios.post(
         `https://notifs.ibns.tech:8005/api/notifications/`,
-        notification,
+        { ...notification, userID, characterID },
         {
             headers: {
                 Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiItMSIsIm5hbWUiOiJDUk9OVEFCIiwiaWF0IjoxNTE2MjM5MDIyfQ.yxUBEzSGyRcjovlHCXPQ7DLJrWAhg28BLGrFQ8gqNew`,
@@ -99,12 +111,14 @@ const submitNotifiaction = (notification: esi_notification): Promise<any> =>
     );
 
 const corpShouldUpdate = (chars: Character[]): boolean => {
+    return true;
     /*
         period = 5 * 60 / tokenCount
         shouldRun = now - timeSinceLastRun > period
     */
     const period = Math.floor(
-        parseInt(process.env.ESI_NOTIFICATION_CACHE_TIMER) / chars.length
+        (parseInt(process.env.ESI_NOTIFICATION_CACHE_TIMER) / chars.length) *
+            1000
     );
     return (
         Date.now() - chars[chars.length - 1].token.lastUsed.getTime() > period
