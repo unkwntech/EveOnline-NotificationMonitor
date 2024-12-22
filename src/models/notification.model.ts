@@ -119,7 +119,14 @@ export default class Notification
                             color: 13223722,
                             fields: [
                                 {
-                                    name: "Shield Attacked",
+                                    name: "System",
+                                    value:
+                                        data.structureName.split(" - ")[0] ??
+                                        "UNKNOWN",
+                                    inline: true,
+                                },
+                                {
+                                    name: "Structure",
                                     value: data.structureName ?? "UNKNOWN",
                                     inline: true,
                                 },
@@ -130,11 +137,6 @@ export default class Notification
                                     }](https://zkillboard.com/corporation/${
                                         data.ownerID ?? ""
                                     }/)`,
-                                    inline: true,
-                                },
-                                {
-                                    name: " ",
-                                    value: " ",
                                     inline: true,
                                 },
                                 {
