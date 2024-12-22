@@ -89,8 +89,6 @@ async function main() {
                 );
             }
         }
-
-        return;
     }
 }
 main();
@@ -111,7 +109,6 @@ const submitNotification = (
     );
 
 const corpShouldUpdate = (chars: Character[]): boolean => {
-    return true;
     /*
         period = 5 * 60 / tokenCount
         shouldRun = now - timeSinceLastRun > period
