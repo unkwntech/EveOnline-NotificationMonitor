@@ -23,6 +23,7 @@ const interestingNotifs = [
 ];
 
 async function main() {
+    console.log(new Date());
     //fetch and setup data
     await DB.Query({}, User.getFactory()).then((usersr: User[]) => {
         users = usersr;
