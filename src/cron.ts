@@ -7,18 +7,19 @@ let characters: Character[] = [];
 let corporations: Corporation[] = [];
 
 const interestingNotifs = [
-    "OrbitalAttacked",
+    "OrbitalAttacked", //poco
+    "OrbitalReinforced",
     "StructureUnderAttack",
     "StructureLostShields",
     "StructureLostArmor",
-    "OrbitalReinforced",
     "StructureNoReagentsAlert",
     "StructureFuelAlert",
-    "TowerResourceAlertMsg",
     "StructureWentLowPower",
     "StructureDestroyed",
     "StructureServicesOffline",
     "StructureImpendingAbandonmentAssetsAtRisk",
+    "TowerAlertMsg",
+    "TowerResourceAlertMsg",
     "CorpNewCEOMsg",
 ];
 
