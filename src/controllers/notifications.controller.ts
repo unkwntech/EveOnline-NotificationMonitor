@@ -165,6 +165,10 @@ export default class NotificationsController {
                     structureName = (
                         await ESIUtilities.GetMoonInfo(text.moonID)
                     ).data.name;
+                } else if (text.planetID) {
+                    structureName = (
+                        await ESIUtilities.GetPlanetInfo(text.planetID)
+                    ).data.name;
                 } else {
                     structureName = (
                         await ESIUtilities.GetStructureInfo(

@@ -15,6 +15,8 @@ export default class ESIUtilities {
         ESIUtilities.UnauthenicatedGetRequest(`alliances/${id}/`);
     public static GetMoonInfo = (id: string) =>
         ESIUtilities.UnauthenicatedGetRequest(`universe/moons/${id}/`);
+    public static GetPlanetInfo = (id: string) =>
+        ESIUtilities.UnauthenicatedGetRequest(`universe/planet/${id}/`);
     public static GetSystemInfo = (id: string) =>
         ESIUtilities.UnauthenicatedGetRequest(`universe/systems/${id}/`);
 
