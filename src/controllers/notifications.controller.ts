@@ -209,7 +209,7 @@ export default class NotificationsController {
                         id: text.structureID ?? "",
                         name: structureName,
                         system: {
-                            id: text.solarSystemID.toString(),
+                            id: text.solarsystemID.toString(),
                             name: solarSystem.data.name,
                         },
                         typeID: text.typeID ?? text.structureTypeID,
