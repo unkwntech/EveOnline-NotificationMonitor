@@ -192,7 +192,7 @@ export default class Notification
                     fields: [
                         {
                             name: "System",
-                            value: data.structure.system,
+                            value: data.structure.system.name,
                             inline: true,
                         },
                         {
