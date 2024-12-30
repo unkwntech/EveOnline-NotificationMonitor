@@ -167,7 +167,7 @@ export default class NotificationsController {
                 } else {
                     structureName = (
                         await ESIUtilities.GetStructureInfo(
-                            text.split(" ")[1],
+                            text.structureID.split(" ")[1],
                             token
                         )
                     ).data.name;
