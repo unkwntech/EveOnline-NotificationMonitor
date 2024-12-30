@@ -173,7 +173,7 @@ export default class NotificationsController {
                     ).data.name;
                 }
                 let solarSystem = await ESIUtilities.GetSystemInfo(
-                    text.solarSystemID.toString()
+                    text.solarsystemID.toString()
                 );
 
                 let alli = {
