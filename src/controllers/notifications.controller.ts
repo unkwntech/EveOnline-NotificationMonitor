@@ -153,6 +153,7 @@ export default class NotificationsController {
         switch (notif.type) {
             case "StructureUnderAttack":
             case "TowerAlertMsg":
+            case "OrbitalAttacked":
                 let char = await ESIUtilities.GetCharInfo(
                     text.charID ?? text.aggressorID
                 );

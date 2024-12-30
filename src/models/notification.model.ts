@@ -96,6 +96,7 @@ export default class Notification
                 return this.StructureAttackedEmbed(data);
                 break;
             case "TowerAlertMsg":
+            case "OrbitalAttacked":
                 return this.TowerAlertMessageEmbed(data);
                 break;
         }
@@ -176,8 +177,8 @@ export default class Notification
     public TowerAlertMessageEmbed(data: NotificationData) {
         const text = yaml.parse(this.text);
         const shieldPer = text.shieldValue;
-        const armourPer = text.armorValue;
-        const hullPer = text.hullValue;
+        const armourPer = text.armorValue ?? 1;
+        const hullPer = text.hullValue ?? 1;
 
         if (!data.structure) return;
         if (!data.attacker) return;
@@ -222,17 +223,17 @@ export default class Notification
                         },
                         {
                             name: "Shield Status",
-                            value: `${Math.floor(shieldPer)}%`,
+                            value: `${Math.floor(shieldPer * 100)}%`,
                             inline: true,
                         },
                         {
                             name: "Armour Status",
-                            value: `${Math.floor(armourPer)}%`,
+                            value: `${Math.floor(armourPer * 100)}%`,
                             inline: true,
                         },
                         {
                             name: "Hull Status",
-                            value: `${Math.floor(hullPer)}%`,
+                            value: `${Math.floor(hullPer * 100)}%`,
                             inline: true,
                         },
                     ],
@@ -367,4 +368,5 @@ export type NotificationType =
     | "RaffleFinished"
     | "StructuresReinforcementChanged"
     | "ExpertSystemExpired"
-    | "RaffleExpired";
+    | "RaffleExpired"
+    | "OrbitalAttacked";
