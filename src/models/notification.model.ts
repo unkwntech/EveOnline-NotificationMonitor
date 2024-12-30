@@ -176,7 +176,7 @@ export default class Notification
     }
     public TowerAlertMessageEmbed(data: NotificationData) {
         const text = yaml.parse(this.text);
-        const shieldPer = text.shieldValue;
+        const shieldPer = text.shieldValue ?? text.shieldLevel;
         const armourPer = text.armorValue ?? 1;
         const hullPer = text.hullValue ?? 1;
 
