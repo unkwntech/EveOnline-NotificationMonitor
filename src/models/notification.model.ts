@@ -54,15 +54,6 @@ export default class Notification
         this.deleted = json.deleted ?? false;
     }
 
-    public format(template: string) {
-        return template
-            .replaceAll("%timestamp%", this.timestamp.toUTCString())
-            .replaceAll("%type%", this.type)
-            .replaceAll("%sender_type%", this.sender.type)
-            .replaceAll("%sender_id%", this.sender.id)
-            .replaceAll("%text%", this.text ?? "");
-    }
-
     public static make(
         id: string,
         sender: NotificationSender,
@@ -98,92 +89,183 @@ export default class Notification
         return "/notification/" + (id ? `/${id}` : "");
     }
 
-    public toEmbed(data?: any) {
+    public toEmbed(data: NotificationData) {
+        //let shieldPer, armourPer, hullPer, attackChar, attackCorp, attackAlli;
         switch (this.type) {
             case "StructureUnderAttack":
-                const text = yaml.parse(this.text);
-
-                const shieldPer = text.shieldPercentage;
-                const armourPer = text.armorPercentage;
-                const hullPer = text.hullPercentage;
-                const attackCorp = text.corpName;
-                let attackAlli = "";
-                if (text.allianceName) attackAlli = text.allianceName;
-
-                return {
-                    content: "@everyone",
-                    tts: false,
-                    embeds: [
-                        {
-                            title: "Structure Attacked",
-                            color: 13223722,
-                            fields: [
-                                {
-                                    name: "System",
-                                    value:
-                                        data.structureName.split(" - ")[0] ??
-                                        "UNKNOWN",
-                                    inline: true,
-                                },
-                                {
-                                    name: "Structure",
-                                    value: data.structureName ?? "UNKNOWN",
-                                    inline: true,
-                                },
-                                {
-                                    name: "Owner",
-                                    value: `[${
-                                        data.ownerName ?? "UNKWNOWN"
-                                    }](https://zkillboard.com/corporation/${
-                                        data.ownerID ?? ""
-                                    }/)`,
-                                    inline: true,
-                                },
-                                {
-                                    name: "Attacker Alliance",
-                                    value: `[${attackAlli}](https://zkillboard.com/alliance/${text.allianceLinkData[2]}/)`,
-                                    inline: true,
-                                },
-                                {
-                                    name: "Attacker Corp",
-                                    value: `[${attackCorp}](https://zkillboard.com/corporation/${text.corpLinkData[2]}/)`,
-                                    inline: true,
-                                },
-                                {
-                                    name: "Attacker",
-                                    value: `[${
-                                        data.attackerName ?? "UNKWNOWN"
-                                    }](https://zkillboard.com/character/${
-                                        text.charID
-                                    }/)`,
-                                    inline: true,
-                                },
-                                {
-                                    name: "Shield Status",
-                                    value: `${Math.floor(shieldPer)}%`,
-                                    inline: true,
-                                },
-                                {
-                                    name: "Armour Status",
-                                    value: `${Math.floor(armourPer)}%`,
-                                    inline: true,
-                                },
-                                {
-                                    name: "Hull Status",
-                                    value: `${Math.floor(hullPer)}%`,
-                                    inline: true,
-                                },
-                            ],
-                            timestamp: this.timestamp,
-                            thumbnail: {
-                                url: `https://images.evetech.net/types/${text.structureShowInfoData[1]}/render?size=128`,
-                            },
-                        },
-                    ],
-                };
+                return this.StructureAttackedEmbed(data);
+                break;
+            case "TowerAlertMsg":
+                return this.TowerAlertMessageEmbed(data);
                 break;
         }
     }
+
+    public StructureAttackedEmbed(data: NotificationData) {
+        const text = yaml.parse(this.text);
+        const shieldPer = text.shieldPercentage;
+        const armourPer = text.armorPercentage;
+        const hullPer = text.hullPercentage;
+
+        if (!data.structure) return;
+        if (!data.attacker) return;
+        if (!data.owner) return;
+
+        return {
+            content: "@everyone",
+            tts: false,
+            embeds: [
+                {
+                    title: "Structure Attacked",
+                    color: 13223722,
+                    fields: [
+                        {
+                            name: "System",
+                            value: data.structure.system,
+                            inline: true,
+                        },
+                        {
+                            name: "Structure",
+                            value: data.structure.name,
+                            inline: true,
+                        },
+                        {
+                            name: "Owner",
+                            value: `[${data.owner.name}](https://zkillboard.com/corporation/${data.owner.id}/)`,
+                            inline: true,
+                        },
+                        {
+                            name: "Attacker Alliance",
+                            value: `[${data.attacker.corp.alli.name}](https://zkillboard.com/alliance/${data.attacker.corp.alli.id}/)`,
+                            inline: true,
+                        },
+                        {
+                            name: "Attacker Corp",
+                            value: `[${data.attacker.corp.name}](https://zkillboard.com/corporation/${data.attacker.corp.id}/)`,
+                            inline: true,
+                        },
+                        {
+                            name: "Attacker",
+                            value: `[${data.attacker.name}](https://zkillboard.com/character/${data.attacker.id}/)`,
+                            inline: true,
+                        },
+                        {
+                            name: "Shield Status",
+                            value: `${Math.floor(shieldPer)}%`,
+                            inline: true,
+                        },
+                        {
+                            name: "Armour Status",
+                            value: `${Math.floor(armourPer)}%`,
+                            inline: true,
+                        },
+                        {
+                            name: "Hull Status",
+                            value: `${Math.floor(hullPer)}%`,
+                            inline: true,
+                        },
+                    ],
+                    timestamp: this.timestamp,
+                    thumbnail: {
+                        url: `https://images.evetech.net/types/${data.structure.typeID}/render?size=128`,
+                    },
+                },
+            ],
+        };
+    }
+    public TowerAlertMessageEmbed(data: NotificationData) {
+        const text = yaml.parse(this.text);
+        const shieldPer = text.shieldValue;
+        const armourPer = text.armorValue;
+        const hullPer = text.hullValue;
+
+        if (!data.structure) return;
+        if (!data.attacker) return;
+        if (!data.owner) return;
+        return {
+            content: "@everyone",
+            tts: false,
+            embeds: [
+                {
+                    title: "Structure Attacked",
+                    color: 13223722,
+                    fields: [
+                        {
+                            name: "System",
+                            value: data.structure.system,
+                            inline: true,
+                        },
+                        {
+                            name: "Structure",
+                            value: data.structure.name ?? "UNKNOWN",
+                            inline: true,
+                        },
+                        {
+                            name: "Owner",
+                            value: `[${data.owner.name}](https://zkillboard.com/corporation/${data.owner.id}/)`,
+                            inline: true,
+                        },
+                        {
+                            name: "Attacker Alliance",
+                            value: `[${data.attacker.corp.alli.name}](https://zkillboard.com/alliance/${data.attacker.corp.alli.id}/)`,
+                            inline: true,
+                        },
+                        {
+                            name: "Attacker Corp",
+                            value: `[${data.attacker.corp.name}](https://zkillboard.com/corporation/${data.attacker.corp.id}/)`,
+                            inline: true,
+                        },
+                        {
+                            name: "Attacker",
+                            value: `[${data.attacker.name}](https://zkillboard.com/character/${data.attacker.id}/)`,
+                            inline: true,
+                        },
+                        {
+                            name: "Shield Status",
+                            value: `${Math.floor(shieldPer)}%`,
+                            inline: true,
+                        },
+                        {
+                            name: "Armour Status",
+                            value: `${Math.floor(armourPer)}%`,
+                            inline: true,
+                        },
+                        {
+                            name: "Hull Status",
+                            value: `${Math.floor(hullPer)}%`,
+                            inline: true,
+                        },
+                    ],
+                    timestamp: this.timestamp,
+                    thumbnail: {
+                        url: `https://images.evetech.net/types/${data.structure.typeID}/render?size=128`,
+                    },
+                },
+            ],
+        };
+    }
+}
+
+export interface NotificationData {
+    attacker?: {
+        id: string;
+        name: string;
+        corp: {
+            id: string;
+            name: string;
+            alli: { id: string; name: string };
+        };
+    };
+    owner?: {
+        id: string;
+        name: string;
+    };
+    structure?: {
+        id: string;
+        system: { id: string; name: string };
+        name: string;
+        typeID: string;
+    };
 }
 
 export interface NotificationSender {

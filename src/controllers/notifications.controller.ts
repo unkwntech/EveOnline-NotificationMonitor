@@ -6,11 +6,13 @@ import { ObjectNotFoundError } from "../errors";
 import Interest from "../models/interests.model";
 import { JWTPayload } from "../models/jwtpayload.model";
 import Notification, {
+    NotificationData,
     NotificationSender,
     NotificationSource,
 } from "../models/notification.model";
 import User from "../models/user.model";
 import { DbUtilities as DB } from "../utilities/db-utilities";
+import ESIUtilities from "../utilities/esi.utilities";
 
 export default class NotificationsController {
     @routable({
@@ -146,38 +148,80 @@ export default class NotificationsController {
             );
         }
 
-        const structure = await axios.get(
-            `https://esi.evetech.net/latest/universe/structures/${text.structureID}/`,
-            {
-                headers: {
-                    Authorization: `Bearer ${token.accessToken}`,
-                },
-            }
-        );
-        const char = await axios.get(
-            `https://esi.evetech.net/latest/characters/${text.charID}/`
-        );
-        const owner = await axios.get(
-            `https://esi.evetech.net/latest/corporations/${structure.data.owner_id}/`
-        );
+        let data: NotificationData = {};
 
-        console.log(
-            notif.toEmbed({
-                attackerName: char.data.name,
-                structureName: structure.data.name,
-                ownerName: owner.data.name,
-                ownerID: structure.data.owner_id,
-            })
-        );
+        switch (notif.type) {
+            case "StructureUnderAttack":
+            case "TowerAlertMsg":
+                let char = await ESIUtilities.GetCharInfo(
+                    text.charID ?? text.aggressorID
+                );
+                let corp = await ESIUtilities.GetCorpInfo(
+                    char.data.corporation_id
+                );
+                let structureName = "";
+                if (text.moonID) {
+                    structureName = (
+                        await ESIUtilities.GetMoonInfo(text.moonID)
+                    ).data.name;
+                } else {
+                    structureName = (
+                        await ESIUtilities.GetStructureInfo(
+                            text.split(" ")[1],
+                            token
+                        )
+                    ).data.name;
+                }
+                let solarSystem = await ESIUtilities.GetSystemInfo(
+                    text.solarSystemID.toString()
+                );
 
-        axios.post(
-            interest.targetWebhook,
-            notif.toEmbed({
-                attackerName: char.data.name,
-                structureName: structure.data.name,
-                ownerName: owner.data.name,
-                ownerID: structure.data.owner_id,
-            })
-        );
+                let alli = {
+                    data: {
+                        name: "",
+                    },
+                };
+
+                let owner = user.characters.find(
+                    (c) => c.id === source.characterID
+                )?.corporation;
+                if (!owner) return;
+
+                if (corp.data.alliance_id) {
+                    alli = await ESIUtilities.GetAlliInfo(
+                        corp.data.alliance_id
+                    );
+                }
+                data = {
+                    attacker: {
+                        id: text.charID,
+                        name: char.data.name,
+                        corp: {
+                            id: char.data.corporation_id,
+                            name: corp.data.name,
+                            alli: {
+                                id: corp.data.alliance_id,
+                                name: alli.data.name,
+                            },
+                        },
+                    },
+                    structure: {
+                        id: text.structureID.split(" ")[1] ?? "",
+                        name: structureName,
+                        system: {
+                            id: text.solarSystemID.toString(),
+                            name: solarSystem.data.name,
+                        },
+                        typeID: text.typeID ?? text.structureTypeID,
+                    },
+                    owner: {
+                        id: owner.id,
+                        name: owner.name,
+                    },
+                };
+                break;
+        }
+
+        axios.post(interest.targetWebhook, notif.toEmbed(data));
     }
 }
