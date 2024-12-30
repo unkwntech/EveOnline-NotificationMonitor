@@ -167,7 +167,7 @@ export default class NotificationsController {
                 } else {
                     structureName = (
                         await ESIUtilities.GetStructureInfo(
-                            text.structureID.split(" ")[1],
+                            text.structureID,
                             token
                         )
                     ).data.name;
@@ -206,7 +206,7 @@ export default class NotificationsController {
                         },
                     },
                     structure: {
-                        id: text.structureID.split(" ")[1] ?? "",
+                        id: text.structureID ?? "",
                         name: structureName,
                         system: {
                             id: text.solarSystemID.toString(),
