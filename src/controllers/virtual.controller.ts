@@ -110,4 +110,30 @@ export default class Virtual {
     }
 
     //#endregion
+
+    //#region stats
+    @routable({
+        path: "/stats/corps",
+        method: "get",
+    })
+    public async GetCorpStats(req: Request, res: Response, jwt: JWTPayload) {
+        DB.Query({}, User.getFactory())
+            .then((users) => {
+                let chars = users.flatMap((u) => u.characters);
+                let charCounts: { [key: string]: number } = {};
+                for (let char of chars) {
+                    if (!charCounts[char.corporation.name]) {
+                        charCounts[char.corporation.name] = 0;
+                    }
+
+                    charCounts[char.corporation.name]++;
+                }
+                res.status(200).send({ charCounts });
+            })
+            .catch((e) => {
+                console.error(e);
+                res.sendStatus(500);
+            });
+    }
+    //#endregion
 }
