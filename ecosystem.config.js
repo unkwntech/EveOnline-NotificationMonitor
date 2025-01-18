@@ -18,7 +18,7 @@ module.exports = {
             key: "deploy.key",
             ref: "origin/main",
             repo: "git@github.com:unkwntech/EveOnline-NotificationMonitor.git",
-            path: "/var/projects/notification-backend-prod/",
+            path: "/var/projects/notifications-backend-prod/",
             "post-deploy":
                 "npm i && pm2 reload ecosystem.config.js --env production --force && pm2 save",
             env: {
@@ -31,7 +31,7 @@ module.exports = {
             key: "deploy.key",
             ref: "origin/main",
             repo: "git@github.com:unkwntech/NotificationMonitor.git",
-            path: "/var/projects/notification-backend-stage",
+            path: "/var/projects/notifications-backend-stage",
             "post-deploy":
                 "npm i && pm2 reload ecosystem.config.js --env staging --force && pm2 save",
             env: {
