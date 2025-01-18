@@ -27,9 +27,11 @@ jobs:
                   cp sample.env .env
                   sed -i -e "s/\%ESI_CLIENT/$ESI_CLIENT/g" .env
                   sed -i -e "s/\%ESI_SECRET/$ESI_SECRET/g" .env
+                  sed -i -e "s/\%JWT_SECRET/$JWT_SECRET/g" .env
               env:
                   ESI_SECRET: ${{secrets.ESI_SECRET}}
                   ESI_CLIENT: ${{secrets.ESI_CLIENTID}}
+                  JWT_SECRET: ${{secrets.JWT_SECRET}}
             - name: Install PM2
               run: |
                   npm i pm2
