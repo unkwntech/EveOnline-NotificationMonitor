@@ -30,7 +30,7 @@ module.exports = {
             host: "ibns.tech",
             key: "deploy.key",
             ref: "origin/main",
-            repo: "git@github.com:unkwntech/NotificationMonitor.git",
+            repo: "git@github.com:unkwntech/EveOnline-NotificationMonitor.git",
             path: "/var/projects/notifications-backend-stage",
             "post-deploy":
                 "npm i && pm2 reload ecosystem.config.js --env staging --force && pm2 save",
