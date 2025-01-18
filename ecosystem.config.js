@@ -2,7 +2,7 @@ module.exports = {
     apps: [
         {
             name: "Notification-Monitor-Backened",
-            script: "main.js",
+            script: "build/main.js",
             time: true,
             instances: 1,
             autorestart: true,
@@ -20,7 +20,7 @@ module.exports = {
             repo: "https://github.com/unkwntech/EveOnline-NotificationMonitor.git",
             path: "/var/projects/notifications-backend-prod/",
             "post-deploy":
-                "npm i && pm2 reload ecosystem.config.js --env production --force && pm2 save",
+                "npm i && tsc -b && pm2 reload ecosystem.config.js --env production --force && pm2 save",
             env: {
                 NODE_ENV: "production",
             },
@@ -33,7 +33,7 @@ module.exports = {
             repo: "https://github.com/unkwntech/EveOnline-NotificationMonitor.git",
             path: "/var/projects/notifications-backend-stage/",
             "post-deploy":
-                "npm i && pm2 reload ecosystem.config.js --env staging --force && pm2 save",
+                "npm i && tsc -b && pm2 reload ecosystem.config.js --env staging --force && pm2 save",
             env: {
                 NODE_ENV: "staging",
             },
