@@ -1,21 +1,42 @@
 module.exports = {
     apps: [
         {
-            name: "NotificationMonitor",
+            name: "Notification-Monitor-Backened",
             script: "main.js",
-            namespace: "EVE",
+            time: true,
+            instances: 1,
+            autorestart: true,
+            max_restarts: 50,
+            watch: false,
+            max_memory_restart: "1G",
         },
     ],
     deploy: {
         production: {
-            user: "achapman",
-            host: "64.251.22.21",
-            path: "/home/achapman/projects/NotificationMonitor/",
-            repo: "git@github.com:unkwntech/NotificationMonitor.git",
+            user: "github",
+            host: "ibns.tech",
+            key: "deploy.key",
             ref: "origin/main",
-            key: "~/.ssh/id_ed25519",
+            repo: "git@github.com:unkwntech/EveOnline-NotificationMonitor.git",
+            path: "/var/projects/notification-backend-prod/",
             "post-deploy":
-                "npm i; pm2 reload NotificationMonitor; rm -rf /home/achapman/projects/NotificationMonitor/source/*",
+                "npm i && pm2 reload ecosystem.config.js --env production --force && pm2 save",
+            env: {
+                NODE_ENV: "production",
+            },
+        },
+        staging: {
+            user: "github",
+            host: "ibns.tech",
+            key: "deploy.key",
+            ref: "origin/main",
+            repo: "git@github.com:unkwntech/NotificationMonitor.git",
+            path: "/var/projects/notification-backend-stage",
+            "post-deploy":
+                "npm i && pm2 reload ecosystem.config.js --env staging --force && pm2 save",
+            env: {
+                NODE_ENV: "staging",
+            },
         },
     },
 };
