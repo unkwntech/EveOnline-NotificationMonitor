@@ -25,14 +25,14 @@ jobs:
             - name: Create env file
               run: |
                   cp sample.env .env
-                  sed -i -e "s/\%ESI_CLIENT/$ESI_CLIENT/g" .env
+                  sed -i -e "s/\%ESI_CLIENTID/$ESI_CLIENTID/g" .env
                   sed -i -e "s/\%ESI_SECRET/$ESI_SECRET/g" .env
                   sed -i -e "s/\%JWT_SECRET/$JWT_SECRET/g" .env
                   sed -i -e "s/\%SSL_PKEY/$SSL_PKEY/g" .env
                   sed -i -e "s/\%SSL_CERT/$SSL_CERT/g" .env
               env:
                   ESI_SECRET: ${{secrets.ESI_SECRET}}
-                  ESI_CLIENT: ${{secrets.ESI_CLIENTID}}
+                  ESI_CLIENTID: ${{secrets.ESI_CLIENTID}}
                   JWT_SECRET: ${{secrets.JWT_SECRET}}
                   SSL_PKEY: ${{secrets.SSL_PKEY}}
                   SSL_CERT: ${{secrets.SSL_CERT}}
