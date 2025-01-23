@@ -120,15 +120,17 @@ export default class Virtual {
         DB.Query({}, User.getFactory())
             .then((users) => {
                 let chars = users.flatMap((u) => u.characters);
-                let charCounts: { [key: string]: number } = {};
+                let activeChars: { [key: string]: number } = {};
+                let inactiveChars: { [key: string]: number } = {};
                 for (let char of chars) {
-                    if (!charCounts[char.corporation.name]) {
-                        charCounts[char.corporation.name] = 0;
+                    if (!activeChars[char.corporation.name]) {
+                        activeChars[char.corporation.name] = 0;
                     }
-
-                    charCounts[char.corporation.name]++;
+                    if (char.token.isActive)
+                        activeChars[char.corporation.name]++;
+                    else inactiveChars[char.corporation.name]++;
                 }
-                res.status(200).send({ charCounts });
+                res.status(200).send({ activeChars, inactiveChars });
             })
             .catch((e) => {
                 console.error(e);
