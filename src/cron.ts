@@ -7,7 +7,7 @@ let characters: Character[] = [];
 let corporations: Corporation[] = [];
 
 const interestingNotifs = [
-    "OrbitalAttacked", //poco
+    "OrbitalAttacked", //poco / metenox?
     "OrbitalReinforced",
     "StructureUnderAttack", //citadel
     "StructureLostShields",
@@ -127,9 +127,7 @@ const corpShouldUpdate = (chars: Character[]): boolean => {
         (parseInt(process.env.ESI_NOTIFICATION_CACHE_TIMER) / chars.length) *
             1000
     );
-    return (
-        Date.now() - chars[chars.length - 1].token.lastUsed.getTime() > period
-    );
+    return Date.now() - chars[0].token.lastUsed.getTime() > period;
 };
 
 const fetchNotifications = async (char: Character) => {
