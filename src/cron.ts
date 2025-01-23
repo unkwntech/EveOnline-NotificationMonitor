@@ -9,7 +9,7 @@ let corporations: Corporation[] = [];
 const interestingNotifs = [
     "OrbitalAttacked", //poco
     "OrbitalReinforced",
-    "StructureUnderAttack",
+    "StructureUnderAttack", //citadel
     "StructureLostShields",
     "StructureLostArmor",
     "StructureNoReagentsAlert",
@@ -18,9 +18,9 @@ const interestingNotifs = [
     "StructureDestroyed",
     "StructureServicesOffline",
     "StructureImpendingAbandonmentAssetsAtRisk",
-    "TowerAlertMsg",
+    "TowerAlertMsg", //pos
     "TowerResourceAlertMsg",
-    "CorpNewCEOMsg",
+    "CorpNewCEOMsg", //corp
 ];
 
 async function main() {
@@ -28,21 +28,29 @@ async function main() {
     //fetch and setup data
     await DB.Query({}, User.getFactory()).then((usersr: User[]) => {
         users = usersr;
-        characters.push(...users.flatMap((u) => u.characters));
 
+        //merge all characters into 1 array, if their tokens are active
+        characters.push(
+            ...users.flatMap((u) =>
+                u.characters.filter((c) => c.token.isActive)
+            )
+        );
+
+        //create a list of all corporations
         corporations = characters
             .map((c) => c.corporation)
             .filter((v, i, a) => a.findIndex((b) => b.id === v.id) === i);
     });
 
     for (let corp of corporations) {
-        //filter to characters in corp and are active
+        //filter to characters in corp
         const corpChars = characters.filter(
-            (c) => c.corporation.name === corp.name && c.token.isActive
+            (c) => c.corporation.name === corp.name
         );
-        //sort oldest to newest
+
+        //sort by time since last used, oldest first
         corpChars.sort((a, b) =>
-            a.token.lastUsed < b.token.lastUsed ? -1 : 1
+            a.token.lastUsed < b.token.lastUsed ? 1 : -1
         );
 
         console.log(`${corp.name} ${corpShouldUpdate(corpChars)}`);
