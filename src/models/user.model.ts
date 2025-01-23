@@ -14,6 +14,8 @@ export default class User implements Identifiable, Deletable, Auditable {
     public updates: RecordUpdates[];
     public deleted: boolean;
 
+    public isSuperAdmin: boolean;
+
     public constructor(json: any) {
         if (json.id === undefined) throw new Error("id is required for User");
         else this.id = json.id;
@@ -30,6 +32,9 @@ export default class User implements Identifiable, Deletable, Auditable {
 
         this.deleted = json.deleted;
         this.updates = json.updates;
+
+        if (json.isSuperAdmin === undefined) this.isSuperAdmin = false;
+        else this.isSuperAdmin = json.isSuperAdmin;
     }
 
     public static make(
