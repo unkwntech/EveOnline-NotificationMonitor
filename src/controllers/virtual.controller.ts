@@ -123,13 +123,15 @@ export default class Virtual {
                 let activeChars: { [key: string]: number } = {};
                 let inactiveChars: { [key: string]: number } = {};
                 for (let char of chars) {
-                    if (!activeChars[char.corporation.name]) {
+                    if (activeChars[char.corporation.name] === undefined) {
                         activeChars[char.corporation.name] = 0;
                         inactiveChars[char.corporation.name] = 0;
                     }
-                    if (char.token.isActive)
+                    if (char.token.isActive) {
                         activeChars[char.corporation.name]++;
-                    else inactiveChars[char.corporation.name]++;
+                    } else {
+                        inactiveChars[char.corporation.name]++;
+                    }
                 }
                 res.status(200).send({ activeChars, inactiveChars });
             })
