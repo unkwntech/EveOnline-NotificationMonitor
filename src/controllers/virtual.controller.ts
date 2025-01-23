@@ -125,6 +125,7 @@ export default class Virtual {
                 for (let char of chars) {
                     if (!activeChars[char.corporation.name]) {
                         activeChars[char.corporation.name] = 0;
+                        inactiveChars[char.corporation.name] = 0;
                     }
                     if (char.token.isActive)
                         activeChars[char.corporation.name]++;
