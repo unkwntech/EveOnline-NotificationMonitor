@@ -1,4 +1,5 @@
 import axios from "axios";
+import JWT from "jsonwebtoken";
 import User, { Character, Corporation, ESIToken } from "./models/user.model";
 import { DbUtilities as DB } from "./utilities/db-utilities";
 
@@ -113,7 +114,13 @@ const submitNotification = (
         { ...notification, userID, characterID },
         {
             headers: {
-                Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiItMSIsIm5hbWUiOiJDUk9OVEFCIiwiaWF0IjoxNTE2MjM5MDIyfQ.yxUBEzSGyRcjovlHCXPQ7DLJrWAhg28BLGrFQ8gqNew`,
+                Authorization: `Bearer ${JWT.sign(
+                    {
+                        sub: "-1",
+                        name: "CRONTAB",
+                    },
+                    process.env.JWT_SECRET
+                )}`,
             },
         }
     );
