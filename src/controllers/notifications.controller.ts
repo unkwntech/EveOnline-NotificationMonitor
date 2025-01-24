@@ -29,10 +29,7 @@ export default class NotificationsController {
         let user = await DB.Get(jwt.sub, User.getFactory());
         if (user.isSuperAdmin) query = {};
 
-        DB.Query(
-            { "notificationSource.userID": jwt.sub },
-            Notification.getFactory()
-        )
+        DB.Query(query, Notification.getFactory())
             .then((results) => {
                 res.status(200).send(results);
             })
