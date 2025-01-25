@@ -184,7 +184,7 @@ export default class Notification
         if (!data.attacker) return;
         if (!data.owner) return;
         return {
-            content: "everyone",
+            content: "@everyone",
             tts: false,
             embeds: [
                 {
