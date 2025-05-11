@@ -30,12 +30,14 @@ jobs:
                   sed -i -e "s/\%JWT_SECRET/$JWT_SECRET/g" .env
                   sed -i -e "s/\%SSL_PKEY/$SSL_PKEY/g" .env
                   sed -i -e "s/\%SSL_CERT/$SSL_CERT/g" .env
+                  sed -i -e "s/\%MINORG_AUTH_TOKEN/$MINORG_AUTH_TOKEN/g" .env
               env:
                   ESI_SECRET: ${{secrets.ESI_SECRET}}
                   ESI_CLIENTID: ${{secrets.ESI_CLIENTID}}
                   JWT_SECRET: ${{secrets.JWT_SECRET}}
                   SSL_PKEY: ${{secrets.SSL_PKEY}}
                   SSL_CERT: ${{secrets.SSL_CERT}}
+                  MINORG_AUTH_TOKEN: ${{secrets.MINORG_AUTH_TOKEN}}
             - name: Install PM2
               run: |
                   npm i pm2
