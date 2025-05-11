@@ -318,6 +318,7 @@ export type NotificationType =
     | "StructureWentLowPower"
     | "CorporationGoalCreated"
     | "StructureLostShields"
+    | "StructureLostArmor"
     | "GameTimeAdded"
     | "GiftReceived"
     | "TowerResourceAlertMsg"

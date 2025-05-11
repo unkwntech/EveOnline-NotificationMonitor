@@ -20,5 +20,6 @@ namespace NodeJS {
         BACKEND_PORT: string;
         LOG_LEVEL: string;
         JWT_SECRET: string;
+        MINORG_AUTH_TOKEN: string;
     }
 }

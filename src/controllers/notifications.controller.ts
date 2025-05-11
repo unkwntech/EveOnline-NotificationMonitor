@@ -149,8 +149,15 @@ export default class NotificationsController {
             );
         }
 
-        let data: NotificationData = {};
+        let timerData: {
+            corporation_name: string;
+            state: "hull" | "armor";
+            type: string; //"metenox" | "keepstar" | ect
+            structure_name: string;
+            timer: string;
+        };
 
+        let data: NotificationData = {};
         switch (notif.type) {
             case "StructureUnderAttack":
             case "TowerAlertMsg":
@@ -228,8 +235,116 @@ export default class NotificationsController {
                     },
                 };
                 break;
+            case "StructureLostShields":
+                timerData = {
+                    corporation_name: "string",
+                    state: "armor",
+                    type: "", //"metenox" | "keepstar" | ect
+                    structure_name: (
+                        await ESIUtilities.GetStructureInfo(
+                            text.structureID,
+                            token
+                        )
+                    ).data.name,
+                    timer: new Date(
+                        new Date(notif.timestamp).getTime() +
+                            parseInt(text.timeLeft) / 10000
+                    ).toISOString(),
+                };
+
+                switch (text.structureShowInfoData[1]) {
+                    case 81826: //Metenox
+                        timerData.type = "metenox";
+                        break;
+                    case 35834: //Keepstar
+                        timerData.type = "keepstar";
+                        break;
+                    case 35833: //Fortizar
+                        timerData.type = "fortizar";
+                        break;
+                    case 35832: //Astrahus
+                        timerData.type = "astrahus";
+                        break;
+                    case 35836: //Tatara
+                        timerData.type = "tatara";
+                        break;
+                    case 35835: //Athanor
+                        timerData.type = "athanor";
+                        break;
+                    case 35827: //Sotiyo
+                        timerData.type = "sotiyo";
+                        break;
+                    case 35826: //Azbel
+                        timerData.type = "azbel";
+                        break;
+                    case 35825: //Raitaru
+                        timerData.type = "raitaru";
+                        break;
+                }
+
+                break;
+            case "StructureLostArmor":
+                timerData = {
+                    corporation_name: "string",
+                    state: "hull",
+                    type: "", //"metenox" | "keepstar" | ect
+                    structure_name: (
+                        await ESIUtilities.GetStructureInfo(
+                            text.structureID,
+                            token
+                        )
+                    ).data.name,
+                    timer: new Date(
+                        new Date(notif.timestamp).getTime() +
+                            parseInt(text.timeLeft) / 10000
+                    ).toISOString(),
+                };
+                timerData.state = "hull";
+
+                switch (text.structureShowInfoData[1]) {
+                    case 81826: //Metenox
+                        timerData.type = "metenox";
+                        break;
+                    case 35834: //Keepstar
+                        timerData.type = "keepstar";
+                        break;
+                    case 35833: //Fortizar
+                        timerData.type = "fortizar";
+                        break;
+                    case 35832: //Astrahus
+                        timerData.type = "astrahus";
+                        break;
+                    case 35836: //Tatara
+                        timerData.type = "tatara";
+                        break;
+                    case 35835: //Athanor
+                        timerData.type = "athanor";
+                        break;
+                    case 35827: //Sotiyo
+                        timerData.type = "sotiyo";
+                        break;
+                    case 35826: //Azbel
+                        timerData.type = "azbel";
+                        break;
+                    case 35825: //Raitaru
+                        timerData.type = "raitaru";
+                        break;
+                }
+
+                break;
         }
 
         axios.post(interest.targetWebhook, notif.toEmbed(data));
+        if (timerData !== undefined) {
+            axios.post(
+                `https://api.minmatar.org/api/structures/timers`,
+                timerData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${process.env.MINORG_AUTH_TOKEN}`,
+                    },
+                }
+            );
+        }
     }
 }
