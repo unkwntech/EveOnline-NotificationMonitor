@@ -140,9 +140,11 @@ export default class NotificationsController {
         const text = yaml.parse(notif.text);
 
         const user = await DB.Get(source.userID, User.getFactory());
-        const token = user.characters.find(
+        const character = user.characters.find(
             (c) => c.id === source.characterID
-        )?.token;
+        );
+        const token = character?.token;
+
         if (!token) {
             throw new Error(
                 `Unable to locate token for character id ${source.characterID}`
@@ -155,6 +157,12 @@ export default class NotificationsController {
             type: string; //"metenox" | "keepstar" | ect
             structure_name: string;
             timer: string;
+        } = {
+            corporation_name: "",
+            state: "hull",
+            type: "astrahus",
+            structure_name: "",
+            timer: "",
         };
 
         let data: NotificationData = {};
@@ -236,57 +244,13 @@ export default class NotificationsController {
                 };
                 break;
             case "StructureLostShields":
-                timerData = {
-                    corporation_name: "string",
-                    state: "armor",
-                    type: "", //"metenox" | "keepstar" | ect
-                    structure_name: (
-                        await ESIUtilities.GetStructureInfo(
-                            text.structureID,
-                            token
-                        )
-                    ).data.name,
-                    timer: new Date(
-                        new Date(notif.timestamp).getTime() +
-                            parseInt(text.timeLeft) / 10000
-                    ).toISOString(),
-                };
-
-                switch (text.structureShowInfoData[1]) {
-                    case 81826: //Metenox
-                        timerData.type = "metenox";
-                        break;
-                    case 35834: //Keepstar
-                        timerData.type = "keepstar";
-                        break;
-                    case 35833: //Fortizar
-                        timerData.type = "fortizar";
-                        break;
-                    case 35832: //Astrahus
-                        timerData.type = "astrahus";
-                        break;
-                    case 35836: //Tatara
-                        timerData.type = "tatara";
-                        break;
-                    case 35835: //Athanor
-                        timerData.type = "athanor";
-                        break;
-                    case 35827: //Sotiyo
-                        timerData.type = "sotiyo";
-                        break;
-                    case 35826: //Azbel
-                        timerData.type = "azbel";
-                        break;
-                    case 35825: //Raitaru
-                        timerData.type = "raitaru";
-                        break;
-                }
-
-                break;
             case "StructureLostArmor":
                 timerData = {
-                    corporation_name: "string",
-                    state: "hull",
+                    corporation_name: character.corporation.name,
+                    state:
+                        notif.type === "StructureLostShields"
+                            ? "armor"
+                            : "hull",
                     type: "", //"metenox" | "keepstar" | ect
                     structure_name: (
                         await ESIUtilities.GetStructureInfo(
@@ -299,11 +263,10 @@ export default class NotificationsController {
                             parseInt(text.timeLeft) / 10000
                     ).toISOString(),
                 };
-                timerData.state = "hull";
 
                 switch (text.structureShowInfoData[1]) {
                     case 81826: //Metenox
-                        timerData.type = "metenox";
+                        timerData.type = "metenox_moon_drill";
                         break;
                     case 35834: //Keepstar
                         timerData.type = "keepstar";
