@@ -99,6 +99,10 @@ export default class Notification
             case "OrbitalAttacked":
                 return this.TowerAlertMessageEmbed(data);
                 break;
+            case "StructureLostArmor":
+            case "StructureLostShields":
+                return this.CitadelReinforcedEmbed(data);
+                break;
         }
     }
 
@@ -245,6 +249,36 @@ export default class Notification
             ],
         };
     }
+    public CitadelReinforcedEmbed(data: NotificationData) {
+        if (!data.structure) return;
+
+        return {
+            content: "",
+            tts: false,
+            embeds: [
+                {
+                    title: "Structure Reinforced",
+                    color: 13223722,
+                    fields: [
+                        {
+                            name: "System",
+                            value: data.structure.system.name,
+                            inline: true,
+                        },
+                        {
+                            name: "Structure",
+                            value: data.structure.name ?? "UNKNOWN",
+                            inline: true,
+                        },
+                    ],
+                    timestamp: this.timestamp,
+                    thumbnail: {
+                        url: `https://images.evetech.net/types/${data.structure.typeID}/render?size=128`,
+                    },
+                },
+            ],
+        };
+    }
 }
 
 export interface NotificationData {
@@ -267,6 +301,7 @@ export interface NotificationData {
         name: string;
         typeID: string;
     };
+    timer?: Date;
 }
 
 export interface NotificationSender {

@@ -250,6 +250,26 @@ export default class NotificationsController {
                 break;
             case "StructureLostShields":
             case "StructureLostArmor":
+                data.timer = new Date(
+                    new Date(notif.timestamp).getTime() +
+                        parseInt(text.timeLeft) / 10000
+                );
+                data.structure = {
+                    id: text.structureID,
+                    system: {
+                        id: text.solarsystemID,
+                        name: (
+                            await ESIUtilities.GetSystemInfo(text.solarSystemID)
+                        ).data.name,
+                    },
+                    name: (
+                        await ESIUtilities.GetStructureInfo(
+                            text.structureID,
+                            token
+                        )
+                    ).data.name,
+                    typeID: text.structureTypeID,
+                };
                 timerData = {
                     corporation_name: character.corporation.name,
                     state:
@@ -257,12 +277,7 @@ export default class NotificationsController {
                             ? "armor"
                             : "hull",
                     type: "", //"metenox" | "keepstar" | ect
-                    structure_name: (
-                        await ESIUtilities.GetStructureInfo(
-                            text.structureID,
-                            token
-                        )
-                    ).data.name,
+                    structure_name: data.structure.name,
                     timer: new Date(
                         new Date(notif.timestamp).getTime() +
                             parseInt(text.timeLeft) / 10000
