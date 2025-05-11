@@ -49,7 +49,7 @@ export default class Notification
         else this.sender = json.sender;
 
         this.notificationSent = json.notificationSent;
-        this.notificationSource = json.notificationSource ?? 0;
+        this.notificationSource = json.notificationSource;
 
         this.deleted = json.deleted ?? false;
     }
