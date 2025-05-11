@@ -108,7 +108,10 @@ export default class NotificationsController {
         jwt: JWTPayload
     ) {
         const notif = (
-            await DB.Query({ id: req.params.id }, Notification.getFactory())
+            await DB.Query(
+                { id: parseInt(req.params.id) },
+                Notification.getFactory()
+            )
         )[0];
         const user = await DB.Get(
             notif.notificationSource.userID,
