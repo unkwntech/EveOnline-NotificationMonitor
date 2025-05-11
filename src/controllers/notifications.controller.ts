@@ -128,7 +128,7 @@ export default class NotificationsController {
             );
         }
 
-        NotificationsController.sendNotification(
+        await NotificationsController.sendNotification(
             notif,
             interest,
             notif.notificationSource
@@ -157,12 +157,16 @@ export default class NotificationsController {
         }
 
         let timerData: {
+            selected_item_window: string;
+            location: string;
             corporation_name: string;
             state: "hull" | "armor";
             type: string; //"metenox" | "keepstar" | ect
             structure_name: string;
             timer: string;
         } = {
+            selected_item_window: "",
+            location: "",
             corporation_name: "",
             state: "hull",
             type: "astrahus",
@@ -259,7 +263,7 @@ export default class NotificationsController {
                     system: {
                         id: text.solarsystemID,
                         name: (
-                            await ESIUtilities.GetSystemInfo(text.solarSystemID)
+                            await ESIUtilities.GetSystemInfo(text.solarsystemID)
                         ).data.name,
                     },
                     name: (
@@ -271,13 +275,15 @@ export default class NotificationsController {
                     typeID: text.structureTypeID,
                 };
                 timerData = {
+                    selected_item_window: "",
+                    location: data.structure.name.split(" - ")[0],
                     corporation_name: character.corporation.name,
                     state:
                         notif.type === "StructureLostShields"
                             ? "armor"
                             : "hull",
                     type: "", //"metenox" | "keepstar" | ect
-                    structure_name: data.structure.name,
+                    structure_name: data.structure.name.split(" - ")[1],
                     timer: new Date(
                         new Date(notif.timestamp).getTime() +
                             parseInt(text.timeLeft) / 10000
@@ -314,7 +320,7 @@ export default class NotificationsController {
                         break;
                 }
 
-                axios
+                await axios
                     .post(
                         `https://api.minmatar.org/api/structures/timers`,
                         timerData,
