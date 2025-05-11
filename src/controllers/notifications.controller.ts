@@ -314,19 +314,23 @@ export default class NotificationsController {
                         break;
                 }
 
-                axios.post(
-                    `https://api.minmatar.org/api/structures/timers`,
-                    timerData,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${process.env.MINORG_AUTH_TOKEN}`,
-                        },
-                    }
-                );
+                axios
+                    .post(
+                        `https://api.minmatar.org/api/structures/timers`,
+                        timerData,
+                        {
+                            headers: {
+                                Authorization: `Bearer ${process.env.MINORG_AUTH_TOKEN}`,
+                            },
+                        }
+                    )
+                    .catch((e) => console.error(e.status, e.response.data));
 
                 break;
         }
 
-        axios.post(interest.targetWebhook, notif.toEmbed(data));
+        axios
+            .post(interest.targetWebhook, notif.toEmbed(data))
+            .catch((e) => console.error(e.status, e.response.data));
     }
 }
