@@ -21,5 +21,6 @@ namespace NodeJS {
         LOG_LEVEL: string;
         JWT_SECRET: string;
         MINORG_AUTH_TOKEN: string;
+        DEFAULT_WEBHOOK: string;
     }
 }

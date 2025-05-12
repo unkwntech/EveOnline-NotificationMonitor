@@ -31,6 +31,7 @@ jobs:
                   sed -i -e "s/\%SSL_PKEY/$SSL_PKEY/g" .env
                   sed -i -e "s/\%SSL_CERT/$SSL_CERT/g" .env
                   sed -i -e "s/\%MINORG_AUTH_TOKEN/$MINORG_AUTH_TOKEN/g" .env
+                  sed -i -e "s/\%DEFAULT_WEBHOOK/$DEFAULT_WEBHOOK/g" .env
               env:
                   ESI_SECRET: ${{secrets.ESI_SECRET}}
                   ESI_CLIENTID: ${{secrets.ESI_CLIENTID}}
@@ -38,6 +39,7 @@ jobs:
                   SSL_PKEY: ${{secrets.SSL_PKEY}}
                   SSL_CERT: ${{secrets.SSL_CERT}}
                   MINORG_AUTH_TOKEN: ${{secrets.MINORG_AUTH_TOKEN}}
+                  DEFAULT_WEBHOOK: ${{secrets.DEFAULT_WEBHOOK}}
             - name: Install PM2
               run: |
                   npm i pm2

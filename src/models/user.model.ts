@@ -48,20 +48,17 @@ export default class User implements Identifiable, Deletable, Auditable {
             interests: [
                 {
                     notificationType: "StructureUnderAttack",
-                    targetWebhook:
-                        "https://discord.com/api/webhooks/1270780080775233617/d3cicjI6Piq855XWh5ZdNMLybBwClO28F6DW9nP2ys6B3wM-DUGqAlBqLZERdjNEe-Ua",
+                    targetWebhook: process.env.DEFAULT_WEBHOOK,
                     template: "",
                 },
                 {
                     notificationType: "TowerAlertMsg",
-                    targetWebhook:
-                        "https://discord.com/api/webhooks/1270780080775233617/d3cicjI6Piq855XWh5ZdNMLybBwClO28F6DW9nP2ys6B3wM-DUGqAlBqLZERdjNEe-Ua",
+                    targetWebhook: process.env.DEFAULT_WEBHOOK,
                     template: "",
                 },
                 {
                     notificationType: "OrbitalAttacked",
-                    targetWebhook:
-                        "https://discord.com/api/webhooks/1270780080775233617/d3cicjI6Piq855XWh5ZdNMLybBwClO28F6DW9nP2ys6B3wM-DUGqAlBqLZERdjNEe-Ua",
+                    targetWebhook: process.env.DEFAULT_WEBHOOK,
                     template: "",
                 },
             ],
